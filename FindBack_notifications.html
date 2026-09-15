@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FindBack — Campus Lost & Found</title>
+
+<style>
+:root{
+    --bg:#f5f6f8;
+    --surface:#ffffff;
+    --text:#151515;
+    --muted:#6f747c;
+    --border:#e4e6ea;
+    --accent:#111111;
+    --soft:#f0f1f3;
+    --success:#16833b;
+    --danger:#c62828;
+    --warning:#a66a00;
+    --shadow:0 10px 30px rgba(0,0,0,.07);
+}
+*{box-sizing:border-box}
+body{
+    margin:0;
+    font-family:Inter,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+}
+body.dark{
+    --bg:#0e0f11;
+    --surface:#181a1e;
+    --text:#f4f4f5;
+    --muted:#a3a6ad;
+    --border:#2b2e34;
+    --accent:#f4f4f5;
+    --soft:#24272d;
+    --shadow:0 10px 30px rgba(0,0,0,.28);
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+
+ .notification-wrap{position:relative}
+.notification-btn{position:relative;min-width:44px}
+.notify-count{position:absolute;top:-5px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:20px;background:#d32f2f;color:white;font-size:11px;font-weight:800;display:none;align-items:center;justify-content:center}
+.notification-panel{display:none;position:absolute;right:0;top:52px;width:330px;max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;z-index:50}
+.notification-head{display:flex;align-items:center;justify-content:space-between;padding:14px;border-bottom:1px solid var(--border)}
+.notification-list{max-height:360px;overflow:auto}
+.notification-item{padding:13px 14px;border-bottom:1px solid var(--border);font-size:13px;line-height:1.45}
+.notification-item.unread{background:var(--soft)}
+.notification-item b{font-size:14px}
+.empty-notify{padding:24px 14px;text-align:center;color:var(--muted);font-size:13px}
+@media(max-width:600px){.notification-panel{right:-55px}.top-actions{gap:6px}}
+
+#loginBox{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+}
+.login-card{
+    width:min(420px,100%);
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:32px;
+    box-shadow:var(--shadow);
+}
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:8px;
+}
+.logo{
+    width:46px;height:46px;
+    display:grid;place-items:center;
+    border-radius:14px;
+    background:var(--accent);
+    color:var(--bg);
+    font-weight:800;
+    font-size:20px;
+}
+h1,h2,h3,p{margin-top:0}
+.subtitle{color:var(--muted);line-height:1.5}
+label{
+    display:block;
+    font-size:13px;
+    font-weight:700;
+    margin:16px 0 6px;
+}
+input,textarea,select{
+    width:100%;
+    padding:12px 13px;
+    border:1px solid var(--border);
+    border-radius:11px;
+    background:var(--surface);
+    color:var(--text);
+    outline:none;
+}
+textarea{min-height:100px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--text)}
+.primary,.secondary,.danger-btn,.success-btn{
+    border:0;
+    border-radius:11px;
+    padding:12px 15px;
+    font-weight:700;
+}
+.primary{background:var(--accent);color:var(--bg)}
+.secondary{background:var(--soft);color:var(--text)}
+.danger-btn{background:#ffe7e7;color:var(--danger)}
+.success-btn{background:#e6f6eb;color:var(--success)}
+.full{width:100%;margin-top:18px}
+.small-btn{padding:8px 10px;font-size:13px}
+
+#board{display:none;min-height:100vh}
+.topbar{
+    position:sticky;top:0;z-index:20;
+    background:color-mix(in srgb,var(--surface) 94%,transparent);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+}
+.topbar-inner{
+    width:min(1180px,calc(100% - 32px));
+    margin:auto;
+    min-height:68px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+}
+.brand-small{display:flex;align-items:center;gap:10px;font-weight:800}
+.logo.small{width:36px;height:36px;border-radius:11px;font-size:15px}
+.top-actions{display:flex;gap:8px}
+.icon-btn{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    border-radius:10px;
+    padding:9px 11px;
+}
+.container{
+    width:min(1180px,calc(100% - 32px));
+    margin:28px auto 50px;
+}
+.hero{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:22px;
+    padding:25px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+}
+.hero-row{
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    align-items:flex-start;
+}
+.hero h1{margin-bottom:7px;font-size:30px}
+.user-pill{
+    background:var(--soft);
+    border-radius:999px;
+    padding:9px 13px;
+    font-size:13px;
+    white-space:nowrap;
+}
+.stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+    margin-top:20px;
+}
+.stat{
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px;
+}
+.stat strong{display:block;font-size:22px}
+.stat span{color:var(--muted);font-size:12px}
+
+.layout{
+    display:grid;
+    grid-template-columns:350px 1fr;
+    gap:20px;
+    align-items:start;
+}
+.panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:20px;
+    box-shadow:var(--shadow);
+}
+.panel h2{font-size:19px;margin-bottom:4px}
+.panel-sub{font-size:13px;color:var(--muted);margin-bottom:16px}
+.form-grid{display:grid;gap:2px}
+.file-note{font-size:12px;color:var(--muted);margin-top:5px}
+.tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+}
+.tab{
+    border:1px solid var(--border);
+    background:var(--surface);
+    color:var(--text);
+    border-radius:999px;
+    padding:9px 13px;
+    font-weight:700;
+}
+.tab.active{background:var(--accent);color:var(--bg)}
+.search-row{
+    display:grid;
+    grid-template-columns:1fr 150px;
+    gap:10px;
+    margin-bottom:16px;
+}
+.results{
+    display:grid;
+    gap:13px;
+}
+.card{
+    border:1px solid var(--border);
+    border-radius:17px;
+    padding:17px;
+    background:var(--surface);
+}
+.card-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+}
+.badge{
+    display:inline-flex;
+    padding:6px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:800;
+}
+.badge.lost{background:#fff0f0;color:#b42318}
+.badge.found{background:#eaf8ef;color:#147a36}
+.badge.got{background:#eaf8ef;color:#147a36}
+.badge.active{background:#fff6df;color:var(--warning)}
+.time{font-size:12px;color:var(--muted)}
+.card h3{margin:13px 0 8px;font-size:19px}
+.card p{color:var(--muted);line-height:1.5;margin-bottom:8px}
+.item-image{
+    width:100%;
+    max-height:280px;
+    object-fit:cover;
+    border-radius:13px;
+    margin-top:12px;
+    border:1px solid var(--border);
+}
+.meta{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:12px;
+    font-size:13px;
+}
+.meta div{background:var(--soft);padding:9px;border-radius:10px}
+.card-actions{display:flex;gap:8px;margin-top:13px}
+.card-actions button{flex:1}
+.empty{
+    text-align:center;
+    padding:45px 15px;
+    border:1px dashed var(--border);
+    border-radius:17px;
+    color:var(--muted);
+}
+.hidden{display:none!important}
+.toast{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:100;
+    max-width:340px;
+    background:#111;
+    color:#fff;
+    padding:13px 16px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    display:none;
+}
+.loading{opacity:.6;pointer-events:none}
+
+@media(max-width:850px){
+    .layout{grid-template-columns:1fr}
+    .hero-row{flex-direction:column}
+    .user-pill{white-space:normal}
+}
+@media(max-width:560px){
+    .container,.topbar-inner{width:min(100% - 20px,1180px)}
+    .login-card{padding:23px}
+    .stats{grid-template-columns:1fr}
+    .search-row{grid-template-columns:1fr}
+    .meta{grid-template-columns:1fr}
+    .card-actions{flex-direction:column}
+    .hero h1{font-size:25px}
+}
+</style>
+</head>
+
+<body>
+
+<div id="loginBox">
+    <div class="login-card">
+        <div class="brand">
+            <div class="logo">F</div>
+            <div>
+                <h2 style="margin:0">FindBack</h2>
+                <div class="subtitle" style="font-size:13px">Campus Lost & Found</div>
+            </div>
+        </div>
+
+        <p class="subtitle">
+            Report a lost item, post a found item, and help return it to the right person.
+        </p>
+
+        <label for="name">Name</label>
+        <input id="name" placeholder="Enter your name" autocomplete="name">
+
+        <label for="dept">Department</label>
+        <input id="dept" placeholder="Example: AI & Data Science">
+
+        <label for="phone">Phone</label>
+        <input id="phone" placeholder="10 digit phone number" inputmode="numeric" maxlength="10">
+
+        <button class="primary full" onclick="login()">Continue</button>
+    </div>
+</div>
+
+<div id="board">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <div class="brand-small">
+                <div class="logo small">F</div>
+                <span>FindBack</span>
+            </div>
+            <div class="top-actions">
+                <div class="notification-wrap">
+                    <button class="icon-btn notification-btn" onclick="toggleNotifications()" id="notifyBtn" title="Notifications">🔔<span id="notifyCount" class="notify-count">0</span></button>
+                    <div id="notificationPanel" class="notification-panel">
+                        <div class="notification-head"><strong>Notifications</strong><button onclick="markNotificationsRead()" class="small-btn secondary">Mark read</button></div>
+                        <div id="notificationList" class="notification-list"><div class="empty-notify">No notifications yet.</div></div>
+                    </div>
+                </div>
+                <button class="icon-btn" onclick="toggleDarkMode()" id="themeBtn">🌙</button>
+                <button class="icon-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <div class="hero-row">
+                <div>
+                    <h1>Campus Lost & Found</h1>
+                    <p class="subtitle">Find what you lost. Return what you found.</p>
+                </div>
+                <div class="user-pill" id="userInfo"></div>
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <strong id="totalCount">0</strong>
+                    <span>Total reports</span>
+                </div>
+                <div class="stat">
+                    <strong id="lostCount">0</strong>
+                    <span>Lost items</span>
+                </div>
+                <div class="stat">
+                    <strong id="foundCount">0</strong>
+                    <span>Found items</span>
+                </div>
+            </div>
+        </section>
+
+        <div class="layout">
+            <section class="panel">
+                <h2>Post an item</h2>
+                <p class="panel-sub">Give enough detail so the owner can recognize it.</p>
+
+                <div class="form-grid">
+                    <label for="type">Report type</label>
+                    <select id="type">
+                        <option value="Lost">I lost an item</option>
+                        <option value="Found">I found an item</option>
+                    </select>
+
+                    <label for="item">Item name</label>
+                    <input id="item" placeholder="Example: Black wallet">
+
+                    <label for="desc">Description</label>
+                    <textarea id="desc" placeholder="Colour, brand, identifying marks, contents, etc."></textarea>
+
+                    <label for="location">Location</label>
+                    <input id="location" placeholder="Where was it lost/found?">
+
+                    <label for="img">Photo</label>
+                    <input type="file" id="img" accept="image/*">
+                    <div class="file-note">Optional. A clear photo improves identification.</div>
+
+                    <button class="primary full" id="postBtn" onclick="addItem()">Post report</button>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="tabs">
+                    <button class="tab active" id="allTab" onclick="setFilter('ALL')">All</button>
+                    <button class="tab" id="lostTab" onclick="setFilter('Lost')">Lost</button>
+                    <button class="tab" id="foundTab" onclick="setFilter('Found')">Found</button>
+                    <button class="tab" id="mineTab" onclick="setFilter('MINE')">My Reports</button>
+                </div>
+
+                <div class="search-row">
+                    <input id="search" placeholder="Search item, description or location..." oninput="renderItems()">
+                    <select id="statusFilter" onchange="renderItems()">
+                        <option value="ALL">All status</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="GOT">Resolved</option>
+                    </select>
+                </div>
+
+                <div id="items" class="results"></div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+    apiKey: "AIzaSyBi49aZ9-2O5dD0zrZqhaKb8XlMGxe965A",
+    authDomain: "smart-lost-and-found-3ee41.firebaseapp.com",
+    projectId: "smart-lost-and-found-3ee41",
+    storageBucket: "smart-lost-and-found-3ee41.firebasestorage.app",
+    messagingSenderId: "770670337840",
+    appId: "1:770670337840:web:4fd7f4be354e98c216f2f5"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const CLOUDINARY_CLOUD_NAME = "urjjpybx";
+const CLOUDINARY_UPLOAD_PRESET = "lost_found_images";
+
+let currentUser = {};
+let allItems = [];
+let activeFilter = "ALL";
+
+function $(id){ return document.getElementById(id); }
+
+function escapeHtml(value){
+    return String(value ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+}
+
+function showToast(message){
+    $("toast").innerText = message;
+    $("toast").style.display = "block";
+    clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(() => $("toast").style.display="none", 2600);
+}
+
+function login(){
+    const name = $("name").value.trim();
+    const dept = $("dept").value.trim();
+    const phone = $("phone").value.trim();
+
+    if(!name || !dept || !phone){
+        showToast("Please fill all login details.");
+        return;
+    }
+
+    if(!/^\d{10}$/.test(phone)){
+        showToast("Enter a valid 10 digit phone number.");
+        return;
+    }
+
+    currentUser = {name, dept, phone};
+    localStorage.setItem("lostUser", JSON.stringify(currentUser));
+    showBoard();
+}
+
+function showBoard(){
+    $("loginBox").style.display = "none";
+    $("board").style.display = "block";
+    $("userInfo").innerText = currentUser.name + " • " + currentUser.dept;
+    updateThemeButton();
+    renderItems();
+    updateNotifications();
+}
+
+function logout(){
+    if(confirm("Do you want to logout?")){
+        localStorage.removeItem("lostUser");
+        location.reload();
+    }
+}
+
+function toggleDarkMode(){
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+    updateThemeButton();
+}
+
+function updateThemeButton(){
+    $("themeBtn").innerText = document.body.classList.contains("dark") ? "☀️" : "🌙";
+}
+
+if(localStorage.getItem("theme") === "dark"){
+    document.body.classList.add("dark");
+}
+
+const savedUser = localStorage.getItem("lostUser");
+if(savedUser){
+    try{
+        currentUser = JSON.parse(savedUser);
+        if(currentUser.name && currentUser.phone) showBoard();
+    }catch(e){
+        localStorage.removeItem("lostUser");
+    }
+}
+
+function setFilter(filter){
+    activeFilter = filter;
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+
+    if(filter === "ALL") $("allTab").classList.add("active");
+    if(filter === "Lost") $("lostTab").classList.add("active");
+    if(filter === "Found") $("foundTab").classList.add("active");
+    if(filter === "MINE") $("mineTab").classList.add("active");
+
+    renderItems();
+}
+
+async function addItem(){
+    const type = $("type").value;
+    const item = $("item").value.trim();
+    const desc = $("desc").value.trim();
+    const location = $("location").value.trim();
+    const file = $("img").files[0];
+
+    if(!item || !desc || !location){
+        showToast("Please fill item name, description and location.");
+        return;
+    }
+
+    if(file && file.size > 5 * 1024 * 1024){
+        showToast("Please choose an image smaller than 5 MB.");
+        return;
+    }
+
+    $("postBtn").disabled = true;
+    $("postBtn").innerText = "Posting...";
+
+    try{
+        let imgURL = "";
+
+        if(file){
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+            const response = await fetch(
+                `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+                {method:"POST", body:formData}
+            );
+
+            if(!response.ok) throw new Error("Image upload failed");
+            const result = await response.json();
+            imgURL = result.secure_url || "";
+        }
+
+        const data = {
+            type,
+            item,
+            desc,
+            location,
+            imgURL,
+            status:"ACTIVE",
+            user:currentUser.name,
+            phone:currentUser.phone,
+            dept:currentUser.dept,
+            time:Date.now()
+        };
+
+        await db.collection("items").add(data);
+
+        $("item").value = "";
+        $("desc").value = "";
+        $("location").value = "";
+        $("img").value = "";
+        $("type").value = "Lost";
+
+        showToast("Report posted successfully.");
+        setFilter("ALL");
+
+    }catch(error){
+        console.error(error);
+        showToast("Could not post the report. Check Firebase/Cloudinary and try again.");
+    }finally{
+        $("postBtn").disabled = false;
+        $("postBtn").innerText = "Post report";
+    }
+}
+
+async function markGot(id){
+    try{
+        await db.collection("items").doc(id).update({
+            status:"GOT",
+            resolvedAt:Date.now()
+        });
+        showToast("Report marked as resolved.");
+    }catch(error){
+        console.error(error);
+        showToast("Could not update the report.");
+    }
+}
+
+async function editItem(id){
+    const report = allItems.find(i => i.id === id);
+    if(!report) return;
+    if(report.phone !== currentUser.phone){
+        showToast("You can edit only your own report.");
+        return;
+    }
+
+    const item = prompt("Item name:", report.item || "");
+    if(item === null) return;
+    const desc = prompt("Description:", report.desc || "");
+    if(desc === null) return;
+    const location = prompt("Location:", report.location || "");
+    if(location === null) return;
+
+    if(!item.trim() || !desc.trim() || !location.trim()){
+        showToast("All fields are required.");
+        return;
+    }
+
+    try{
+        await db.collection("items").doc(id).update({
+            item: item.trim(),
+            desc: desc.trim(),
+            location: location.trim(),
+            updatedAt: Date.now()
+        });
+        showToast("Report updated successfully.");
+    }catch(error){
+        console.error(error);
+        showToast("Could not update the report.");
+    }
+}
+
+async function deleteItem(id){
+    if(!confirm("Delete this report?")) return;
+
+    try{
+        await db.collection("items").doc(id).delete();
+        showToast("Report deleted.");
+    }catch(error){
+        console.error(error);
+        showToast("Could not delete the report.");
+    }
+}
+
+db.collection("items")
+.orderBy("time","desc")
+.onSnapshot(snapshot => {
+    allItems = [];
+    snapshot.forEach(doc => {
+        allItems.push({id:doc.id, ...doc.data()});
+    });
+    updateStats();
+    renderItems();
+    updateNotifications();
+}, error => {
+    console.error(error);
+    $("items").innerHTML = `<div class="empty"><strong>Could not load reports.</strong><br><br>Check your Firebase Firestore connection/rules.</div>`;
+});
+
+function updateStats(){
+    $("totalCount").innerText = allItems.length;
+    $("lostCount").innerText = allItems.filter(i => i.type === "Lost" && i.status !== "GOT").length;
+    $("foundCount").innerText = allItems.filter(i => i.type === "Found" && i.status !== "GOT").length;
+}
+
+function normalizeWords(text){
+    return String(text || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter(w => w.length >= 3);
+}
+
+function getPossibleMatches(item){
+    if(!item || item.status === "GOT") return [];
+
+    const oppositeType = item.type === "Lost" ? "Found" : "Lost";
+    const itemWords = new Set(normalizeWords(item.item + " " + item.desc));
+    const locationWords = new Set(normalizeWords(item.location));
+
+    return allItems
+        .filter(other => other.id !== item.id && other.type === oppositeType && other.status !== "GOT")
+        .map(other => {
+            const otherWords = new Set(normalizeWords(other.item + " " + other.desc));
+            const otherLocationWords = new Set(normalizeWords(other.location));
+            let score = 0;
+
+            itemWords.forEach(word => { if(otherWords.has(word)) score += 2; });
+            locationWords.forEach(word => { if(otherLocationWords.has(word)) score += 3; });
+
+            const sameItemName = String(item.item || "").trim().toLowerCase() === String(other.item || "").trim().toLowerCase();
+            if(sameItemName) score += 5;
+
+            return {other, score};
+        })
+        .filter(x => x.score >= 5)
+        .sort((a,b) => b.score - a.score)
+        .slice(0,3);
+}
+
+function possibleMatchesHtml(item){
+    const matches = getPossibleMatches(item);
+    if(!matches.length) return "";
+
+    return `
+        <div class="match-box" style="margin-top:14px;padding:12px;border:1px solid rgba(99,102,241,.25);border-radius:14px;background:rgba(99,102,241,.06)">
+            <strong>🔎 Possible match${matches.length > 1 ? "es" : ""}</strong>
+            ${matches.map(({other}) => `
+                <div style="margin-top:8px;font-size:14px">
+                    <b>${escapeHtml(other.item || "Item")}</b> — ${escapeHtml(other.type)}<br>
+                    <span class="subtitle">📍 ${escapeHtml(other.location || "Unknown location")}</span>
+                </div>`).join("")}
+            <div style="margin-top:8px;font-size:12px" class="subtitle">Based on item details and location.</div>
+        </div>`;
+}
+
+function timeAgo(timestamp){
+    if(!timestamp) return "Recently";
+    const seconds = Math.max(0, Math.floor((Date.now() - timestamp)/1000));
+
+    if(seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds/60);
+    if(minutes < 60) return minutes + (minutes === 1 ? " min ago" : " mins ago");
+    const hours = Math.floor(minutes/60);
+    if(hours < 24) return hours + (hours === 1 ? " hr ago" : " hrs ago");
+    const days = Math.floor(hours/24);
+    return days + (days === 1 ? " day ago" : " days ago");
+}
+
+function notificationKey(){
+    return "findback_read_notifications_" + (currentUser.phone || "guest");
+}
+
+function getNotifications(){
+    if(!currentUser.phone) return [];
+    const read = JSON.parse(localStorage.getItem(notificationKey()) || "[]");
+    const notes = [];
+
+    allItems.forEach(myItem => {
+        if(myItem.phone !== currentUser.phone || myItem.status === "GOT") return;
+        getPossibleMatches(myItem).forEach(({other}) => {
+            const id = myItem.id + "_" + other.id;
+            notes.push({
+                id,
+                unread: !read.includes(id),
+                title: "Possible match found",
+                text: `${other.item || "Item"} (${other.type}) may match your ${myItem.type.toLowerCase()} report.`,
+                location: other.location || "Unknown location",
+                time: other.time || Date.now()
+            });
+        });
+    });
+
+    return notes.sort((a,b) => b.time - a.time).slice(0,20);
+}
+
+function updateNotifications(){
+    const notes = getNotifications();
+    const unread = notes.filter(n => n.unread).length;
+    const count = $("notifyCount");
+    if(count){
+        count.innerText = unread > 9 ? "9+" : unread;
+        count.style.display = unread ? "flex" : "none";
+    }
+
+    const list = $("notificationList");
+    if(!list) return;
+    if(!notes.length){
+        list.innerHTML = '<div class="empty-notify">No notifications yet.<br>Possible matches will appear here.</div>';
+        return;
+    }
+    list.innerHTML = notes.map(n => `
+        <div class="notification-item ${n.unread ? "unread" : ""}">
+            <b>🔎 ${escapeHtml(n.title)}</b><br>
+            ${escapeHtml(n.text)}<br>
+            <span class="subtitle">📍 ${escapeHtml(n.location)}</span>
+        </div>`).join("");
+}
+
+function toggleNotifications(){
+    const panel = $("notificationPanel");
+    if(!panel) return;
+    panel.style.display = panel.style.display === "block" ? "none" : "block";
+    updateNotifications();
+}
+
+function markNotificationsRead(){
+    const notes = getNotifications();
+    localStorage.setItem(notificationKey(), JSON.stringify(notes.map(n => n.id)));
+    updateNotifications();
+    showToast("Notifications marked as read.");
+}
+
+document.addEventListener("click", function(e){
+    const wrap = document.querySelector(".notification-wrap");
+    if(wrap && !wrap.contains(e.target)) $("notificationPanel").style.display = "none";
+});
+
+function renderItems(){
+    if(!$("items")) return;
+
+    const query = $("search").value.trim().toLowerCase();
+    const status = $("statusFilter").value;
+
+    let filtered = allItems.filter(i => {
+        const haystack = [
+            i.item, i.desc, i.location, i.type, i.user, i.dept
+        ].join(" ").toLowerCase();
+
+        const matchesSearch = !query || haystack.includes(query);
+        const matchesStatus = status === "ALL" || i.status === status;
+        const matchesTab =
+            activeFilter === "ALL" ||
+            activeFilter === i.type ||
+            (activeFilter === "MINE" && i.phone === currentUser.phone);
+
+        return matchesSearch && matchesStatus && matchesTab;
+    });
+
+    if(filtered.length === 0){
+        $("items").innerHTML = `
+            <div class="empty">
+                <div style="font-size:30px">🔎</div>
+                <strong>No reports found</strong>
+                <div style="margin-top:6px">Try another search or post a new report.</div>
+            </div>`;
+        return;
+    }
+
+    $("items").innerHTML = filtered.map(i => {
+        const isMine = i.phone === currentUser.phone;
+        const typeClass = i.type === "Found" ? "found" : "lost";
+        const statusClass = i.status === "GOT" ? "got" : "active";
+
+        return `
+        <article class="card">
+            <div class="card-top">
+                <div>
+                    <span class="badge ${typeClass}">${escapeHtml(i.type || "Report")}</span>
+                    <span class="badge ${statusClass}">${i.status === "GOT" ? "RESOLVED" : "ACTIVE"}</span>
+                </div>
+                <span class="time">${escapeHtml(timeAgo(i.time))}</span>
+            </div>
+
+            <h3>${escapeHtml(i.item)}</h3>
+            <p>${escapeHtml(i.desc)}</p>
+
+            <div class="meta">
+                <div>📍 ${escapeHtml(i.location)}</div>
+                <div>👤 ${escapeHtml(i.user || "Student")}</div>
+                <div>🏫 ${escapeHtml(i.dept || "Campus")}</div>
+                <div>📞 <a href="tel:${escapeHtml(i.phone || "")}">${escapeHtml(i.phone || "Not available")}</a></div>
+            </div>
+
+            ${i.imgURL ? `<img class="item-image" src="${escapeHtml(i.imgURL)}" alt="Item photo" loading="lazy">` : ""}
+
+            ${possibleMatchesHtml(i)}
+
+            ${isMine ? `
+                <div class="card-actions">
+                    ${i.status !== "GOT"
+                        ? `<button class="success-btn" onclick="markGot('${escapeHtml(i.id)}')">✓ Mark resolved</button>`
+                        : ""}
+                    <button class="secondary-btn" onclick="editItem('${escapeHtml(i.id)}')">✏️ Edit</button>
+                    <button class="danger-btn" onclick="deleteItem('${escapeHtml(i.id)}')">Delete report</button>
+                </div>
+            ` : ""}
+        </article>`;
+    }).join("");
+}
+
+setInterval(() => {
+    if(allItems.length){
+        renderItems();
+        updateNotifications();
+    }
+}, 60000);
+</script>
+</body>
+</html>
